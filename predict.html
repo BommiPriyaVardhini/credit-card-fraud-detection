@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Predict - Credit Card Fraud Detection</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #2c3e50, #34495e, #16a085, #27ae60);
+      font-family: 'Georgia', serif;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    header a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: bold;
+      margin-left: 20px;
+    }
+    .overlay {
+      background: rgba(0, 0, 0, 0.5);
+      min-height: 100vh;
+      padding: 60px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      width: 90%;
+      max-width: 500px;
+      padding: 30px;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 10px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+    label {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="number"], input[type="date"], input[type="time"] {
+      padding: 10px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 4px;
+      width: 100%;
+    }
+    #predict-button {
+      margin-top: 30px;
+      padding: 10px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+    #predict-button:hover {
+      background: darkred;
+    }
+    .prediction-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: red;
+      color: white;
+      border-radius: 5px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .logout-btn {
+      margin-top: 20px;
+      padding: 10px;
+      background: blue;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+      width: 100%;
+    }
+    .logout-btn:hover {
+      background: darkblue;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="{{ url_for('home') }}">Home</a>
+    <a href="{{ url_for('contactus') }}">Contact</a>
+  </header>
+  <div class="overlay">
+    <div class="container">
+      <h2>Fraud Prediction</h2>
+      <form id="predict-form" method="POST" action="{{ url_for('predict') }}">
+        <label>Credit Card Number:</label>
+        <input type="text" name="credit_card_number" id="credit_card_number" maxlength="12" pattern="\d{12}" required 
+        title="Enter exactly 12 digits" oninput="this.value = this.value.replace(/\D/g, '')">
+
+        <label>Validity (MM/YY):</label>
+        <input type="text" name="validity" maxlength="5" required placeholder="MM/YY"
+        oninput="formatValidity(this)">
+
+        <label>Amount:</label>
+        <input type="number" name="amount" required>
+
+        <label>Transaction Date:</label>
+        <input type="date" name="transaction_date" id="transaction_date" required oninput="validateTransactionDate()">
+        <span id="date-error" class="error"></span>
+
+        <label>Transaction Time:</label>
+        <input type="time" name="transaction_time" required>
+
+        <button type="submit" id="predict-button">Predict</button>
+      </form>
+
+      {% if prediction is not none %}
+        <div class="prediction-box">
+          <h3>Prediction Result:</h3>
+          <p>{{ prediction }}</p>
+        </div>
+      {% endif %}
+
+      <form action="{{ url_for('logout') }}" method="POST">
+        <button type="submit" class="logout-btn">Logout</button>
+      </form>
+
+     <script>
+    function validateCardNumber() {
+            let cardNumber = document.getElementById("credit_card_number").value;
+            let errorMsg = document.getElementById("card-error");
+
+            if (!/^\d{12}$/.test(cardNumber)) { 
+                errorMsg.innerText = "❌ Credit Card Number must be exactly 12 digits!";
+                return false; 
+            } else {
+                errorMsg.innerText = "";
+                return true; 
+            }
+        }
+    function validateTransactionDate() {
+        let dateInput = document.getElementById("transaction_date");
+        let errorMsg = document.getElementById("date-error");
+
+        let today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+
+        if (dateInput.value > today) {
+            errorMsg.innerText = "❌ Please enter a valid date (not in the future)!";
+            return false;
+        } else {
+            errorMsg.innerText = "";
+            return true;
+        }
+    }
+
+    function formatValidity(input) {
+        let value = input.value.replace(/\D/g, '');  // Remove non-digits
+        if (value.length > 2) {
+            input.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        } else {
+            input.value = value;
+        }
+    }
+</script>
+    </div>
+  </div>
+</body>
+</html>
